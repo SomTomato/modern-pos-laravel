@@ -7,54 +7,87 @@
     <div class="card-header">
         <h2>Filter Sales</h2>
     </div>
-    <form method="get" action="{{ route('sales.report') }}" class="filter-form">
-        <div style="display: flex; gap: 20px; align-items: flex-end;">
-            <div class="form-group" style="flex: 1;">
-                <label for="start_date">Start Date</label>
-                <input type="date" name="start_date" id="start_date" class="form-control" value="{{ $startDate }}">
+    <div class="card-body">
+        <form method="get" action="{{ route('sales.report') }}" class="filter-form">
+            <div class="row align-items-end">
+                <div class="col-md-5">
+                    <div class="form-group">
+                        <label for="start_date">Start Date</label>
+                        <input type="date" name="start_date" class="form-control" value="{{ $startDate }}">
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="form-group">
+                        <label for="end_date">End Date</label>
+                        <input type="date" name="end_date" class="form-control" value="{{ $endDate }}">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-block">Filter</button>
+                    </div>
+                </div>
             </div>
-            <div class="form-group" style="flex: 1;">
-                <label for="end_date">End Date</label>
-                <input type="date" name="end_date" id="end_date" class="form-control" value="{{ $endDate }}">
-            </div>
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary">Filter</button>
-            </div>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 
-<div class="card">
-    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>Sales from {{ $startDate }} to {{ $endDate }}</h2>
-        <div style="text-align: right;">
-            <h3 style="margin: 0;">Total Revenue: <span style="color: var(--success-color);">${{ number_format($totalRevenue, 2) }}</span></h3>
-        </div>
+<div class="card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3>Sales from {{ \Carbon\Carbon::parse($startDate)->format('M d, Y') }} to {{ \Carbon\Carbon::parse($endDate)->format('M d, Y') }}</h3>
+        <p class="mb-0"><strong>Total Revenue:</strong> ${{ number_format($totalRevenue, 2) }}</p>
     </div>
-    <table class="styled-table">
-        <thead>
-            <tr>
-                <th>Sale ID</th><th>Date & Time</th><th>Cashier</th><th style="text-align: right;">Total Amount</th><th style="text-align: center;">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($sales as $sale)
+    <div class="card-body">
+        <table class="styled-table">
+            <thead>
                 <tr>
-                    <td>#{{ $sale->id }}</td>
-                    {{-- THE FIX: Check if created_at exists before formatting it --}}
-                    <td>{{ $sale->created_at ? $sale->created_at->format('Y-m-d h:i A') : 'N/A' }}</td>
-                    <td>{{ $sale->user->username ?? 'N/A' }}</td>
-                    <td style="text-align: right;">${{ number_format($sale->total_amount, 2) }}</td>
-                    <td style="text-align: center;"><a href="{{ route('invoice.show', $sale) }}" class="btn btn-primary" target="_blank">View Invoice</a></td>
+                    <th>Date & Time</th>
+                    <th>Sale ID</th>
+                    <th>Cashier</th>
+                    <th>Customer</th>
+                    <th style="text-align: right;">Total</th>
+                    <th style="text-align: center;">Actions</th>
                 </tr>
-            @empty
-                <tr><td colspan="5">No sales found for the selected period.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
-
-    <div class="pagination-container" style="margin-top: 20px;">
-        {{ $sales->links() }}
+            </thead>
+            <tbody>
+                @forelse ($sales as $sale)
+                    <tr>
+                        <td>{{ $sale->created_at->format('M d, Y, h:i A') }}</td>
+                        <td>#{{ $sale->id }}</td>
+                        <td>{{ $sale->user->username ?? 'N/A' }}</td>
+                        <td>{{ $sale->customer->name ?? 'Walk-in Customer' }}</td>
+                        <td style="text-align: right;">${{ number_format($sale->total_amount, 2) }}</td>
+                        <td style="text-align: center;">
+                            {{-- THE FIX: Removed target="_blank" and added a unique ID --}}
+                            <a href="{{ route('invoice.show', $sale) }}" class="btn btn-primary btn-sm" id="invoice-link-{{ $sale->id }}">View Invoice</a>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="text-center">No sales found for the selected date range.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+         <div class="mt-3">
+            {{ $sales->appends(request()->query())->links() }}
+        </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+{{-- THE FIX: Script to pass dark mode status to all invoice links --}}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (document.body.classList.contains('dark-mode')) {
+            const invoiceLinks = document.querySelectorAll('a[id^="invoice-link-"]');
+            invoiceLinks.forEach(link => {
+                const url = new URL(link.href);
+                url.searchParams.set('dark_mode', 'true');
+                link.href = url.toString();
+            });
+        }
+    });
+</script>
+@endpush
