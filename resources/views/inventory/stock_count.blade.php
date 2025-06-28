@@ -54,10 +54,9 @@
                             @endif
                         </td>
                         <td style="text-align: center; vertical-align: middle;">
-                            {{-- THE FIX: Added inline styles to ensure the link looks like a button --}}
+                            {{-- THE FIX: Removed the inline style to allow the theme to apply the correct color --}}
                             <a href="{{ route('inventory.stock_adjustment') }}?product_id={{ $product->id }}" 
-                               class="btn btn-info btn-sm"
-                               style="display: inline-block; background-color: #17a2b8; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none;">
+                               class="btn btn-primary btn-sm">
                                Adjust
                             </a>
                         </td>
