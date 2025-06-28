@@ -10,70 +10,86 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\SettingsController; // Add this use statement at the top!
-use App\Http\Controllers\ReportsController; // Add this use statement at the top!
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\EmployeeController;
-
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
 */
 
-// THE FIX: Changed the root route to redirect to the login page.
+//-------------------------------------------------------------------------
+// GUEST ROUTES
+//-------------------------------------------------------------------------
+
+// Redirect the root URL to the login page for convenience.
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
+
+//-------------------------------------------------------------------------
+// AUTHENTICATED ROUTES
+//-------------------------------------------------------------------------
+
 Route::middleware(['auth'])->group(function() {
 
-    // Dashboard
+    //--- Dashboard ---//
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // POS Terminal & AJAX calls
+    //--- Point of Sale (POS) ---//
     Route::get('/pos-terminal', [PosController::class, 'index'])->name('pos.terminal');
     Route::get('/ajax/search-customers', [PosController::class, 'searchCustomers'])->name('ajax.searchCustomers');
     Route::post('/ajax/sales', [PosController::class, 'processSale'])->name('ajax.processSale');
 
-    // Invoice
-    Route::get('/invoice/{sale}', [InvoiceController::class, 'show'])->name('invoice.show');
-
-    // Sales Report
-    Route::get('/sales-report', [SalesReportController::class, 'index'])->name('sales.report');
-
-    // Inventory Management
-    Route::get('/stock-count', [InventoryController::class, 'stockCount'])->name('inventory.stock_count');
-    Route::get('/stock-adjustment', [InventoryController::class, 'stockAdjustment'])->name('inventory.stock_adjustment');
-    Route::post('/stock-adjustment/process', [InventoryController::class, 'processStockAdjustment'])->name('inventory.process_adjustment');
-
-    // Products
+    //--- Products & Categories ---//
     Route::post('products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('products.toggleStatus');
     Route::resource('products', ProductController::class);
-
-    // Customers
-    Route::resource('customers', CustomerController::class)->except(['show', 'create', 'edit', 'update']);
-
-    // Categories
     Route::resource('categories', CategoryController::class)->except(['show', 'create', 'edit', 'update']);
 
-    // Users
-    Route::resource('users', UserController::class)->except(['show', 'destroy']);
-    // --- Settings Route ---
-    Route::get('/settings/store', [SettingsController::class, 'storeSettings'])->name('settings.store');
-    // --- Reports ---
-    Route::get('/reports/product-performance', [ReportsController::class, 'productPerformance'])->name('reports.product_performance');
-    Route::get('/reports/end-of-day', [ReportsController::class, 'endOfDayReport'])->name('reports.end_of_day');
-    // Add this new route for printing the stock count
-    Route::get('/stock-count/print', [InventoryController::class, 'stockCountPrint'])->name('inventory.stock_count.print');
-    Route::get('/reports/end-of-day/print', [ReportsController::class, 'endOfDayReportPrint'])->name('reports.end_of_day.print');
-    Route::get('/settings/store', [SettingsController::class, 'storeSettings'])->name('settings.store');
-    // THE FIX: Add these three separate routes for updating
-    Route::post('/settings/general', [SettingsController::class, 'updateGeneral'])->name('settings.general.update');
-    Route::post('/settings/financial', [SettingsController::class, 'updateFinancial'])->name('settings.financial.update');
-    Route::post('/settings/receipt', [SettingsController::class, 'updateReceipt'])->name('settings.receipt.update');
-    // Add this line inside the auth middleware group
-    Route::resource('employees', EmployeeController::class)->except(['show', 'destroy', 'edit', 'update']);
+    //--- Inventory Management ---//
+    // Grouping inventory routes under a common prefix for better organization.
+    Route::prefix('inventory')->name('inventory.')->group(function() {
+        Route::get('/stock-count', [InventoryController::class, 'stockCount'])->name('stock_count');
+        Route::get('/stock-count/print', [InventoryController::class, 'printView'])->name('stock_count.print_view'); // The new print view route
+        Route::get('/stock-adjustment', [InventoryController::class, 'stockAdjustment'])->name('stock_adjustment');
+        Route::post('/stock-adjustment/process', [InventoryController::class, 'processStockAdjustment'])->name('process_adjustment');
     });
 
+    //--- Sales, Invoices & Reports ---//
+    Route::get('/invoice/{sale}', [InvoiceController::class, 'show'])->name('invoice.show');
+    Route::get('/sales-report', [SalesReportController::class, 'index'])->name('sales.report');
+    Route::get('/reports/product-performance', [ReportsController::class, 'productPerformance'])->name('reports.product_performance');
+    Route::get('/reports/end-of-day', [ReportsController::class, 'endOfDayReport'])->name('reports.end_of_day');
+    Route::get('/reports/end-of-day/print', [ReportsController::class, 'endOfDayReportPrint'])->name('reports.end_of_day.print');
+
+    //--- Customers & Employees ---//
+    Route::resource('customers', CustomerController::class)->except(['show', 'create', 'edit', 'update']);
+    Route::resource('employees', EmployeeController::class)->except(['show', 'destroy', 'edit', 'update']);
+
+    //--- Users & Settings ---//
+    Route::resource('users', UserController::class)->except(['show', 'destroy']);
+
+    // Grouping settings routes under a common prefix.
+    Route::prefix('settings')->name('settings.')->group(function() {
+        Route::get('/store', [SettingsController::class, 'storeSettings'])->name('store');
+        Route::post('/general', [SettingsController::class, 'updateGeneral'])->name('general.update');
+        Route::post('/financial', [SettingsController::class, 'updateFinancial'])->name('financial.update');
+        Route::post('/receipt', [SettingsController::class, 'updateReceipt'])->name('receipt.update');
+    });
+
+});
+
+
+//--------------------------------------------------------------------------
+// AUTHENTICATION ROUTES
+//--------------------------------------------------------------------------
+// Includes login, registration, password reset, etc.
 require __DIR__.'/auth.php';
