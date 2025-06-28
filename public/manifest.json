@@ -1,0 +1,21 @@
+{
+  "name": "Modern POS",
+  "short_name": "ModernPOS",
+  "start_url": "/login",
+  "display": "standalone",
+  "background_color": "#4e342e",
+  "theme_color": "#e67e22",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/SMS POS.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/images/SMS POS.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
