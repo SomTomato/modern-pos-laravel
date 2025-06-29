@@ -14,6 +14,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\PurchaseOrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -75,9 +76,10 @@ Route::middleware(['auth'])->group(function() {
         Route::post('/receipt', [SettingsController::class, 'updateReceipt'])->name('receipt.update');
     });
 
-    // THE FIX: Moved Employees and Suppliers resource routes to the correct top-level location.
+    // THE FIX: Moved Employees, Suppliers, and Purchase Orders to the correct top-level location.
     Route::resource('employees', EmployeeController::class);
     Route::resource('suppliers', SupplierController::class);
+    Route::resource('purchase_orders', PurchaseOrderController::class);
 
 });
 
