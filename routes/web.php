@@ -13,6 +13,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\SupplierController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,28 +42,30 @@ Route::middleware(['auth'])->group(function() {
     Route::get('/sales-report', [SalesReportController::class, 'index'])->name('sales.report');
 
     // Inventory Management
-    Route::get('/inventory/stock-count', [InventoryController::class, 'stockCount'])->name('inventory.stock_count');
-    Route::get('/inventory/stock-count/print', [InventoryController::class, 'printView'])->name('inventory.stock_count.print_view');
-    Route::get('/inventory/stock-adjustment', [InventoryController::class, 'stockAdjustment'])->name('inventory.stock_adjustment');
-    Route::post('/inventory/stock-adjustment/process', [InventoryController::class, 'processStockAdjustment'])->name('inventory.process_adjustment');
+    Route::prefix('inventory')->name('inventory.')->group(function () {
+        Route::get('/stock-count', [InventoryController::class, 'stockCount'])->name('stock_count');
+        Route::get('/stock-count/print', [InventoryController::class, 'printView'])->name('stock_count.print_view');
+        Route::get('/stock-adjustment', [InventoryController::class, 'stockAdjustment'])->name('stock_adjustment');
+        Route::post('/stock-adjustment/process', [InventoryController::class, 'processStockAdjustment'])->name('process_adjustment');
+    });
 
-    // Products
+    // Products & Catalog
     Route::post('products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('products.toggleStatus');
     Route::resource('products', ProductController::class);
+    Route::resource('categories', CategoryController::class)->except(['show', 'create', 'edit', 'update']);
 
     // Customers
     Route::resource('customers', CustomerController::class)->except(['show', 'create', 'edit', 'update']);
-
-    // Categories
-    Route::resource('categories', CategoryController::class)->except(['show', 'create', 'edit', 'update']);
 
     // Users
     Route::resource('users', UserController::class)->except(['show', 'destroy']);
     
     // Reports
-    Route::get('/reports/product-performance', [ReportsController::class, 'productPerformance'])->name('reports.product_performance');
-    Route::get('/reports/end-of-day', [ReportsController::class, 'endOfDayReport'])->name('reports.end_of_day');
-    Route::get('/reports/end-of-day/print', [ReportsController::class, 'endOfDayReportPrint'])->name('reports.end_of_day.print');
+    Route::prefix('reports')->name('reports.')->group(function() {
+        Route::get('/product-performance', [ReportsController::class, 'productPerformance'])->name('product_performance');
+        Route::get('/end-of-day', [ReportsController::class, 'endOfDayReport'])->name('end_of_day');
+        Route::get('/end-of-day/print', [ReportsController::class, 'endOfDayReportPrint'])->name('end_of_day.print');
+    });
 
     // Settings
     Route::prefix('settings')->name('settings.')->group(function() {
@@ -72,8 +75,9 @@ Route::middleware(['auth'])->group(function() {
         Route::post('/receipt', [SettingsController::class, 'updateReceipt'])->name('receipt.update');
     });
 
-    // THE FIX: This now enables all actions (index, create, store, show, edit, update, destroy)
+    // THE FIX: Moved Employees and Suppliers resource routes to the correct top-level location.
     Route::resource('employees', EmployeeController::class);
+    Route::resource('suppliers', SupplierController::class);
 
 });
 

@@ -48,7 +48,7 @@
                 <li class="menu-item has-submenu {{ in_array(Route::currentRouteName(), $purchasingRoutes) ? 'open' : '' }}">
                     <a href="#"><i class="fa-solid fa-truck"></i> Purchasing <i class="fa fa-angle-down float-right"></i></a>
                     <ul class="submenu">
-                        <li class="submenu-item"><a href="#"><i class="fa-solid fa-parachute-box" style="width: 20px; margin-right: 10px;"></i>Suppliers</a></li>
+                        <li class="submenu-item"><a href="{{ route('suppliers.index') }}"><i class="fa-solid fa-parachute-box" style="width: 20px; margin-right: 10px;"></i>Suppliers</a></li>
                         <li class="submenu-item"><a href="#"><i class="fa-solid fa-receipt" style="width: 20px; margin-right: 10px;"></i>Purchase Orders</a></li>
                     </ul>
                 </li>
