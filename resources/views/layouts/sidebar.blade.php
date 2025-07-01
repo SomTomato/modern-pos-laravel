@@ -11,14 +11,14 @@
 
         @auth
             @php
-                // We add the new mockup routes to these arrays so the menus will open correctly
+                // THE FIX: Moved 'promotions' from settings to catalog routes
                 $reportRoutes = ['sales.report', 'reports.product_performance', 'reports.end_of_day'];
-                $catalogRoutes = ['products.index', 'products.create', 'products.edit', 'categories.index'];
+                $catalogRoutes = ['products.index', 'products.create', 'products.edit', 'categories.index', 'promotions.index'];
                 $inventoryRoutes = ['inventory.stock_count', 'inventory.stock_adjustment'];
-                $purchasingRoutes = ['suppliers.index', 'purchase_orders.index'];
+                $purchasingRoutes = ['suppliers.index', 'suppliers.create', 'suppliers.edit', 'purchase_orders.index', 'purchase_orders.create', 'purchase_orders.show'];
                 $userRoutes = ['users.index', 'users.edit'];
-                $employeeRoutes = ['employees.index'];
-                $settingRoutes = ['settings.store', 'settings.promotions'];
+                $employeeRoutes = ['employees.index', 'employees.create', 'employees.show', 'employees.edit'];
+                $settingRoutes = ['settings.store']; 
             @endphp
 
             @if (Auth::user()->role === 'admin')
@@ -42,6 +42,8 @@
                     <ul class="submenu">
                         <li class="submenu-item"><a href="{{ route('products.index') }}"><i class="fa-solid fa-boxes-stacked" style="width: 20px; margin-right: 10px;"></i>Products</a></li>
                         <li class="submenu-item"><a href="{{ route('categories.index') }}"><i class="fa-solid fa-tags" style="width: 20px; margin-right: 10px;"></i>Categories</a></li>
+                        {{-- THE FIX: Moved the Promotions link here from Settings --}}
+                        <li class="submenu-item"><a href="#"><i class="fa-solid fa-percent" style="width: 20px; margin-right: 10px;"></i>Promotions</a></li>
                     </ul>
                 </li>
 
@@ -49,7 +51,7 @@
                     <a href="#"><i class="fa-solid fa-truck"></i> Purchasing <i class="fa fa-angle-down float-right"></i></a>
                     <ul class="submenu">
                         <li class="submenu-item"><a href="{{ route('suppliers.index') }}"><i class="fa-solid fa-parachute-box" style="width: 20px; margin-right: 10px;"></i>Suppliers</a></li>
-                        <li class="submenu-item"><a href="#"><i class="fa-solid fa-receipt" style="width: 20px; margin-right: 10px;"></i>Purchase Orders</a></li>
+                        <li class="submenu-item"><a href="{{route('purchase_orders.index')}}"><i class="fa-solid fa-receipt" style="width: 20px; margin-right: 10px;"></i>Purchase Orders</a></li>
                     </ul>
                 </li>
                 
@@ -81,9 +83,7 @@
                 <li class="menu-item has-submenu {{ in_array(Route::currentRouteName(), $settingRoutes) ? 'open' : '' }}">
                     <a href="#"><i class="fa-solid fa-cogs"></i> Settings <i class="fa fa-angle-down float-right"></i></a>
                     <ul class="submenu">
-                        {{-- THE FIX: Changed the href to the new, real route --}}
                         <li class="submenu-item"><a href="{{ route('settings.store') }}"><i class="fa-solid fa-store" style="width: 20px; margin-right: 10px;"></i>Store Settings</a></li>
-                        <li class="submenu-item"><a href="#"><i class="fa-solid fa-percent" style="width: 20px; margin-right: 10px;"></i>Promotions</a></li>
                     </ul>
                 </li>
 
